@@ -9,44 +9,65 @@
 // ==/UserScript==
 
 class AutoBreed {
-  constructor() {
-    this.loop_id = undefined;
-  }
+  listObservableEgg = [];
+  listObservableStep = [];
+  isStarted = false;
+
+  constructor() {}
 
   start() {
-    if (!this.loop_id) this.loop_id = setInterval(AutoBreed.autobreed, 1000);
-  }
-
-  stop() {
-    if (this.loop_id) {
-      clearInterval(this.loop_id);
-      this.loop_id = undefined;
+    if (this.isStarted) {
+      return;
+    } else {
+      this.listObservableEgg = [];
+      this.listObservableStep = [];
+      this.isStarted = true;
     }
+    App.game.breeding._eggList.forEach((egg, ind) => {
+      this.listObservableEgg.push(
+        egg.subscribe((data) => {
+          if (!data.isNone()) {
+            this.listObservableStep[ind]?.dispose();
+            this.listObservableStep[ind] = this.subscribeStep(data, ind);
+          }
+        })
+      );
+    });
   }
 
-  enabled() {
-    return this.loop_id !== undefined;
+  subscribeStep(data, ind) {
+    return data.steps.subscribe((step) => {
+      if (step >= data.totalSteps) {
+        App.game.breeding.hatchPokemonEgg(ind);
+        this.addPokemonToHatchery();
+      }
+    });
   }
 
   static getPokemons() {
     return PartyController.getHatcherySortedList().filter((p) => BreedingController.visible(p)());
   }
 
-  static autobreed() {
-    if (!App?.game?.breeding) return;
-
-    const breeding = App.game.breeding;
-    breeding.eggList.forEach((_, i, li) => breeding.hatchPokemonEgg(li.length - i - 1));
-
+  addPokemonToHatchery() {
     let pokemons;
-    while (breeding.hasFreeEggSlot() && (pokemons = AutoBreed.getPokemons()).length > 0)
-      breeding.addPokemonToHatchery(pokemons[0]);
+    while (App.game.breeding.hasFreeEggSlot() && (pokemons = AutoBreed.getPokemons()).length > 0)
+      App.game.breeding.addPokemonToHatchery(pokemons[0]);
+  }
+
+  stop() {
+    this.listObservableEgg.forEach((obs) => obs.dispose());
+    this.listObservableStep.forEach((obs) => obs.dispose());
+    this.isStarted = false;
+  }
+
+  enabled() {
+    return this.isStarted;
   }
 }
 
 (() => {
   window.autobreed = new AutoBreed();
-  window.autobreed.start();
+  // window.autobreed.start();
 
   if (scriptui) scriptui.addOption(new OptionUI("Auto Breed", autobreed));
 })();
