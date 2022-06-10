@@ -1,14 +1,9 @@
-// ==UserScript==
-// @name        Auto Farming - pokeclicker.com
-// @namespace   Our Scripts
-// @match       https://www.pokeclicker.com/
-// @grant       none
-// @version     1.0
-// @author      Cycy
-// @description 06/06/2022, 20:12:17
-// ==/UserScript==
+import { Action } from "../base/action";
 
-class AutoFarm {
+export class AutoFarm implements Action {
+  plotlist: any;
+  farmSubscription: any;
+
   constructor() {
     this.plotlist = [];
     this.farmSubscription = undefined;
@@ -31,7 +26,7 @@ class AutoFarm {
   }
 
   stop() {
-    if (!this.enabled()) return;
+    if (!this.enabled) return;
 
     this.farmSubscription.dispose();
     this.plotlist.forEach((item) => {
@@ -40,7 +35,7 @@ class AutoFarm {
     this.farmSubscription = undefined;
   }
 
-  enabled() {
+  get enabled() {
     return this.farmSubscription !== undefined;
   }
 
@@ -53,8 +48,4 @@ class AutoFarm {
   }
 }
 
-(() => {
-  window.autofarm = new AutoFarm();
-
-  if (scriptui) scriptui.addOption(new OptionUI("Auto Farm", autofarm));
-})();
+export const autofarm = new AutoFarm();

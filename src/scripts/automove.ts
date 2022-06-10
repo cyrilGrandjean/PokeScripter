@@ -1,49 +1,12 @@
-// ==UserScript==
-// @name        Auto Move - pokeclicker.com
-// @namespace   Our Scripts
-// @match       https://www.pokeclicker.com/
-// @grant       none
-// @version     1.0
-// @author      Me
-// @description 06/06/2022, 19:41:20
-// ==/UserScript==
+import { IntervalAction } from "../base/interval";
 
-const GameState = {
-  idle: 0,
-  paused: 1,
-  fighting: 2,
-  gym: 3,
-  dungeon: 4,
-  safari: 5,
-  town: 6,
-  shop: 7,
-  battleFrontier: 8,
-  temporaryBattle: 9,
-};
-
-class AutoMoveRoute {
+export class AutoMoveRoute extends IntervalAction {
   constructor() {
-    this.loop_id = undefined;
-    this.interval = 10;
+    super(10);
   }
 
-  start() {
-    if (!this.loop_id) this.loop_id = setInterval(AutoMoveRoute.change_route, this.interval);
-  }
-
-  stop() {
-    if (this.loop_id) {
-      clearInterval(this.loop_id);
-      this.loop_id = undefined;
-    }
-  }
-
-  enabled() {
-    return this.loop_id !== undefined;
-  }
-
-  static change_route() {
-    if (App?.game?.gameState === GameState.fighting) {
+  loop() {
+    if (App?.game?.gameState === GameConstants.GameState.fighting) {
       const pokemon = Battle.enemyPokemon();
       if (
         !pokemon ||
@@ -68,8 +31,4 @@ class AutoMoveRoute {
   }
 }
 
-(() => {
-  window.automove = new AutoMoveRoute();
-
-  if (scriptui) scriptui.addOption(new OptionUI("Auto Move Route", automove));
-})();
+export const automove = new AutoMoveRoute();
