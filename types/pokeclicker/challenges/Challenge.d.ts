@@ -1,0 +1,9 @@
+declare class Challenge {
+  type: string;
+  description: string;
+  active: KnockoutObservable<boolean>;
+  constructor(type: string, description: string, active?: boolean);
+  activate(): void;
+  disable(): Promise<void>;
+  toJSON(): boolean;
+}
