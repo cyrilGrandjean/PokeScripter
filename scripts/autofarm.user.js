@@ -10,31 +10,47 @@
 
 class AutoFarm {
   constructor() {
-    this.plotlist = [];
+    this.listObsPlot = [];
+    this.listObsAge = [];
     this.farmSubscription = undefined;
   }
 
   start() {
-    this.plotlist = [];
+    this.listObsPlot = [];
     const farming = App.game.farming;
-    farming.plotList.forEach((plot) => {
-      this.plotlist.push(
-        plot._age.subscribe((data) => {
-          const berryData = farming.berryData[plot.berry];
-          if (data > berryData.growthTime[3]) {
-            this.harvestAll();
-            this.plantAll();
-          }
+    farming.plotList.forEach((plot, ind) => {
+      this.listObsPlot.push(
+        plot._berry.subscribe((data) => {
+          this.listObsAge[ind]?.dispose();
+          this.listObsAge[ind] = this.subscribeAge(ind, data);
         })
       );
     });
+  }
+
+  subscribeAge(ind, berry) {
+    return App.game.farming.plotList[ind]._age.subscribe((data) => {
+      const berryData = App.game.farming.berryData[berry];
+      if (data > berryData.growthTime[3]) {
+        this.harvest(ind);
+        this.plant(ind, berry);
+      }
+    });
+  }
+
+  plant(ind, berry) {
+    App.game.farming.plant(ind, berry);
+  }
+
+  harvest(ind) {
+    App.game.farming.harvest(ind);
   }
 
   stop() {
     if (!this.enabled()) return;
 
     this.farmSubscription.dispose();
-    this.plotlist.forEach((item) => {
+    this.listObsPlot.forEach((item) => {
       item.dispose();
     });
     this.farmSubscription = undefined;
