@@ -1,15 +1,18 @@
 import { Action } from "../base/action";
 
-export class AutoFarm implements Action {
+export class AutoFarm extends Action {
   plotlist: any;
   farmSubscription: any;
 
   constructor() {
+    super();
     this.plotlist = [];
     this.farmSubscription = undefined;
   }
 
   start() {
+    if (this.farmSubscription) return;
+
     this.plotlist = [];
     const farming = App.game.farming;
     farming.plotList.forEach((plot) => {
@@ -26,17 +29,13 @@ export class AutoFarm implements Action {
   }
 
   stop() {
-    if (!this.enabled) return;
+    if (!this.farmSubscription) return;
 
     this.farmSubscription.dispose();
     this.plotlist.forEach((item) => {
       item.dispose();
     });
     this.farmSubscription = undefined;
-  }
-
-  get enabled() {
-    return this.farmSubscription !== undefined;
   }
 
   harvestAll() {

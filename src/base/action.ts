@@ -1,5 +1,12 @@
 export abstract class Action {
-  abstract start(): void;
-  abstract stop(): void;
-  abstract get enabled(): boolean;
+  enabled = ko.observable(false);
+
+  constructor() {
+    this.enabled.subscribe((value) => {
+      value ? this.start() : this.stop();
+    });
+  }
+
+  protected abstract start(): void;
+  protected abstract stop(): void;
 }
